@@ -1,0 +1,217 @@
+:PROPERTIES:
+:ID:       cb5eed28-b847-423a-a72e-1228d407e2a3
+:END:
+#+title: Nardo Env
+
+Install [[https://github.com/microsoft/terminal][Windows Terminal]] if you're not already using it(surprising this is not horrible actually)
+
+** WSL2
+
+Follow these steps, install Ubuntu, we are only going to use it make sure we have =systemd= running, then you can delete it later
+
+- [[https://learn.microsoft.com/en-us/windows/wsl/install-manual#step-1---enable-the-windows-subsystem-for-linux][Enable WSL2]]
+
+Reboot now.
+
+- [[https://learn.microsoft.com/en-us/windows/wsl/systemd][Enable systemd]]
+
+Reboot again even if it says you do not have to.
+
+[[file:./res/systemd.png]]
+
+This is essential, do not install NixOS until you can successfully enable systemd
+
+
+** NixOS on WSL
+https://github.com/nix-community/NixOS-WSL
+
+
+Download the NixOS tarball [[https://github.com/nix-community/NixOS-WSL/releases/download/2311.5.3/nixos-wsl.tar.gz][here]] to =C:/users/<your-user>= and open a command prompt there
+
+#+begin_src shell
+wsl --import NixOS .\NixOS\ nixos-wsl.tar.gz --version 2
+#+end_src
+
+#+begin_src shell
+wsl -d NixOS
+#+end_src
+
+Set your root password as your normally would, it defaults to 'nixos'.
+
+We should now be in the nixos container, now we can start a shell with =vim= and =git=
+#+begin_src shell
+nix-shell -p neovim git
+sudo nvim /etc/nixos/configuration.nix
+#+end_src
+
+=/etc/nixos/configuration.nix=
+
+#+begin_src nix
+# /etc/nixos/configuration.nix
+{
+  lib,
+  pkgs,
+  config,
+  modulesPath,
+  ...
+}: {
+  imports = [
+    "${modulesPath}/profiles/minimal.nix"
+  ];
+
+  wsl = {
+    # https://nix-community.github.io/NixOS-WSL/options.html
+    # for a comprehensive list of wsl options
+    enable = true;
+    defaultUser = "jdoe"; # TODO Set name
+    nativeSystemd = true;
+    docker-desktop.enable = true;
+  };
+
+  # set this to your Windows 11/10 “Device name.” You can find
+  # this in the Windows Settings app under System > About.
+  networking.hostName = "name"; # TODO Set hostname
+
+  # Enable nix flakes
+  nix = {
+    package = pkgs.nixFlakes;
+    extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
+  };
+
+  system.stateVersion = "23.11";
+}
+#+end_src
+
+#+begin_src nix
+# /etc/nixos/home.nix
+# https://nix-community.github.io/home-manager/options.xhtml
+{
+  config,
+  pkgs,
+  ...
+}: {
+  home = {
+    username = "jdoe"; # TODO Set name
+    homeDirectory = "/home/jdoe"; # TODO Set name
+    stateVersion = "23.11";
+  };
+
+  # Packages that should be installed to the user profile
+  home.packages = with pkgs; [
+    alejandra
+    coreutils
+    htop
+    gnumake
+    git
+  ];
+
+  programs = {
+    home-manager.enable = true;
+
+    neovim = {
+      enable = true;
+      defaultEditor = true;
+    };
+
+    git = {
+      enable = true;
+      userName = "Jane Doe";
+      userEmail = "jane.doe@example.org";
+    };
+  };
+}
+#+end_src
+
+#+begin_src shell
+sudo nvim /etc/nixos/flake.nix
+#+end_src
+
+#+begin_src nix
+# /etc/nixos/flake.nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-python.url = "github:cachix/nixpkgs-python";
+    nixos-wsl = {
+      url = "github:nix-community/NixOS-WSL";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = inputs @ {
+    nixpkgs,
+    nixos-wsl,
+    nixpkgs-python,
+    home-manager,
+    ...
+  }: {
+    nixosConfigurations = {
+      hostname = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./configuration.nix
+
+          nixos-wsl.nixosModules.wsl
+
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.users.jdoe = import ./home.nix; # TODO Set name
+          }
+        ];
+      };
+    };
+  };
+}
+#+end_src
+
+Init a repo here and track the files, files have to be at least staged or =nix= will not find them
+#+begin_src shell
+git init
+git add .
+#+end_src
+
+Let's check that this will build, if there's any errors it will tell us
+#+begin_src shell
+$ nix flake check
+warning: Git tree '/etc/nixos' is dirty
+#+end_src
+
+We can ignore this warning, it's just telling us that we have uncommited changes
+
+#+begin_src shell
+$ nix flake show
+git+file:///etc/nixos
+└───nixosConfigurations
+    └───"hostname": NixOS configuration
+#+end_src
+
+Once this works then we can track our lockfile and commit our changes
+#+begin_src shell
+git add flake.lock
+git commit -m "init wsl config"
+#+end_src
+
+#+begin_src shell
+sudo nixos-rebuild switch
+#+end_src
+
+We should see a new file =flake.lock=, this is what locks all our dependency versions.
+
+Exit out of NixOS, then from command prompt run:
+
+#+begin_src shell
+wsl --shutdown
+wsl -d NixOS
+#+end_src
+
+You should log you in as the =<your name>@<pick a host name>= from =configuration.nix= (your new default user) not =nixos@nixos= or =root@nixos=, if that's the case, something went wrong.
+
+Reboot.
