@@ -1,6 +1,3 @@
-:PROPERTIES:
-:ID:       cb5eed28-b847-423a-a72e-1228d407e2a3
-:END:
 #+title: Nardo Env
 
 Install [[https://github.com/microsoft/terminal][Windows Terminal]] if you're not already using it(surprising this is not horrible actually)
@@ -58,38 +55,21 @@ nvim /devenv/configuration.nix
 #+begin_src nix
 # /etc/nixos/configuration.nix
 {
-  lib,
-  pkgs,
-  config,
-  modulesPath,
-  ...
+  lib, pkgs, config, modulesPath, ...
 }: {
   imports = [
     "${modulesPath}/profiles/minimal.nix"
   ];
 
   wsl = {
-    # https://nix-community.github.io/NixOS-WSL/options.html
-    # for a comprehensive list of wsl options
-    enable = true;
     defaultUser = "jdoe"; # TODO Set name
-    nativeSystemd = true;
-    docker-desktop.enable = true;
+    ...
   };
 
   # set this to your Windows 11/10 “Device name.” You can find
   # this in the Windows Settings app under System > About.
   networking.hostName = "name"; # TODO Set hostname
-
-  # Enable nix flakes
-  nix = {
-    package = pkgs.nixFlakes;
-    extraOptions = ''
-      experimental-features = nix-command flakes
-    '';
-  };
-
-  system.stateVersion = "23.11";
+  ...
 }
 #+end_src
 
@@ -101,52 +81,18 @@ nvim /devenv/home.nix
 #+begin_src nix
 # /etc/nixos/home.nix
 {
-  config,
-  pkgs,
-  ...
+  config, pkgs, ...
 }: {
   home = {
     username = "jdoe"; # TODO Set name
     homeDirectory = "/home/jdoe"; # TODO Set name
-    stateVersion = "23.11";
   };
-
-  fonts.fontconfig.enable = true;
-
-  # Packages that should be installed to the user profile
-  home.packages = with pkgs; [
-    alejandra
-    cached-nix-shell
-    cachix
-    coreutils
-    htop
-    gnumake
-    unzip
-    wget
-  ];
-
+  ...
   programs = {
-    # https://nix-community.github.io/home-manager/options.xhtml
-    # see options here for adding additional programs
-    home-manager.enable = true;
-
-    bash.enable = true;
-
-    direnv = {
-      enable = true;
-      enableBashIntegration = true;
-      nix-direnv.enable = true;
-    };
-
     git = {
       enable = true;
       userName = "Jane Doe";
       userEmail = "jane.doe@example.org";
-    };
-
-    neovim = {
-      enable = true;
-      defaultEditor = true;
     };
   };
 }
@@ -160,38 +106,17 @@ nvim /devenv/flake.nix
 #+begin_src nix
 # /etc/nixos/flake.nix
 {
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
-    nixpkgs-python.url = "github:cachix/nixpkgs-python";
-    nixos-wsl = {
-      url = "github:nix-community/NixOS-WSL";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    home-manager = {
-      url = "github:nix-community/home-manager/release-23.11";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+  inputs = {...};
   };
 
-  outputs = inputs @ {
-    nixpkgs,
-    nixos-wsl,
-    nixpkgs-python,
-    home-manager,
-    ...
-  }: {
+  outputs = inputs @ {nixpkgs, nixos-wsl, nixpkgs-python, home-manager, ...}: {
     nixosConfigurations = {
       hostname = nixpkgs.lib.nixosSystem { # TODO Set hostname
         system = "x86_64-linux";
         modules = [
-          ./configuration.nix
-
-          nixos-wsl.nixosModules.wsl
-
           home-manager.nixosModules.home-manager
           {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
+            ...
             home-manager.users.jdoe = import ./home.nix; # TODO Set name
           }
         ];
