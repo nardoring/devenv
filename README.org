@@ -14,7 +14,11 @@ Reboot now.
 
 Reboot again even if it says you do not have to.
 
-[[file:./res/systemd.png]]
+#+begin_src shell
+systemctl list-unit-files --type=service | grep systemd
+#+end_src
+
+[[file:./systemd.png]]
 
 This is essential, do not install NixOS until you can successfully enable systemd
 
@@ -46,6 +50,10 @@ cd
 git clone git@github.com:nardoring/devenv.git
 sudo ln -s devenv/* /etc/nixos
 #+end_src
+
+You'll likely want to make a new branch for yourself.
+
+*** Config
 
 Set your =defaultUser= and =networking.hostName=
 #+begin_src shell
@@ -126,11 +134,7 @@ nvim /devenv/flake.nix
 }
 #+end_src
 
-# Init a repo here and track the files, files have to be at least staged or =nix= will not find them
-# #+begin_src shell
-# git init
-# git add .
-# #+end_src
+*** Build
 
 Let's check that this will build, if there's any errors it will tell us
 #+begin_src shell
