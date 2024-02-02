@@ -45,6 +45,11 @@ nix-shell -p neovim git
 
 Clone this repo to =~/= or where ever you'd like to manage your config from. We can just symlink to =/etc/nixos/=.
 
+Backup =/etc/nixos= first
+#+begin_src shell
+sudo mv /etc/nixos /etc/nixos~
+#+end_src
+
 #+begin_src shell
 cd
 git clone git@github.com:nardoring/devenv.git
