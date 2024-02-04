@@ -22,6 +22,7 @@
     gnumake
     unzip
     wget
+    cmake
   ];
 
   programs = {
