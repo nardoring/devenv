@@ -47,5 +47,18 @@
       enable = true;
       defaultEditor = true;
     };
+
+    vscode = {
+      enable = true;
+      package = pkgs.vscodium;
+      extensions = with pkgs.vscode-extensions; [
+        # Nix stuff
+        mkhl.direnv
+
+        # js stuff
+        dbaeumer.vscode-eslint
+        esbenp.prettier-vscode
+      ];
+    };
   };
 }
