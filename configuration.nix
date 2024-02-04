@@ -21,7 +21,7 @@
 
   # set this to your Windows 11/10 “Device name.” You can find
   # this in the Windows Settings app under System > About.
-  networking.hostName = "DANIILA-P53"; # TODO Set hostname
+  networking.hostName = "nixos"; # TODO Set hostname
 
   # Enable nix flakes
   nix = {

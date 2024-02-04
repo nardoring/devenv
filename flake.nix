@@ -21,7 +21,7 @@
     ...
   }: {
     nixosConfigurations = {
-      "DANIILA-P53" = nixpkgs.lib.nixosSystem {
+      "nixos" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           ./configuration.nix
