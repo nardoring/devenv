@@ -27,6 +27,8 @@
     cachix
     coreutils
     htop
+    docker
+    docker-compose
     gnumake
     unzip
     wget

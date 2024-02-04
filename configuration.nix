@@ -20,13 +20,15 @@
     nativeSystemd = true;
     docker-desktop.enable = true;
   };
+  virtualisation.docker.enable = true;
+  users.users.daniil.extraGroups = ["docker"];
 
   # set this to your Windows 11/10 “Device name.” You can find
   # this in the Windows Settings app under System > About.
   networking.hostName = "nixos"; # TODO Set hostname
 
   nixpkgs.config.allowUnfree = true;
-
+  
   # Enable nix flakes
   nix = {
     package = pkgs.nixFlakes;
