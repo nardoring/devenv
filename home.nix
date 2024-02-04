@@ -60,7 +60,7 @@
     vscode = {
       # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.vscode.package
       enable = true;
-      package = pkgs.vscodium;
+      # package = pkgs.vscodium;
       extensions = with pkgs.vscode-extensions; [
         # install extensions here
         # search: https://search.nixos.org/packages?type=packages&query=vscode-extensions

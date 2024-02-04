@@ -10,6 +10,8 @@
     "${modulesPath}/profiles/minimal.nix"
   ];
 
+  environment.noXlibs = false;
+
   wsl = {
     # https://nix-community.github.io/NixOS-WSL/options.html
     # for a comprehensive list of wsl options
@@ -22,6 +24,8 @@
   # set this to your Windows 11/10 “Device name.” You can find
   # this in the Windows Settings app under System > About.
   networking.hostName = "nixos"; # TODO Set hostname
+
+  nixpkgs.config.allowUnfree = true;
 
   # Enable nix flakes
   nix = {
