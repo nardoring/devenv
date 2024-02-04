@@ -33,6 +33,7 @@
     unzip
     wget
     cmake
+    jq
   ];
 
   programs = {
