@@ -14,7 +14,7 @@
     # https://nix-community.github.io/NixOS-WSL/options.html
     # for a comprehensive list of wsl options
     enable = true;
-    defaultUser = "nixos";
+    defaultUser = "daniil";
     nativeSystemd = true;
     docker-desktop.enable = true;
   };
