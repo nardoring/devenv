@@ -5,8 +5,8 @@
   ...
 }: {
   home = {
-    username = "jdoe"; # TODO Set name
-    homeDirectory = "/home/jdoe"; # TODO Set name
+    username = "nixos";
+    homeDirectory = "/home/nixos";
     stateVersion = "23.11";
   };
 
@@ -39,8 +39,8 @@
 
     git = {
       enable = true;
-      userName = "Jane Doe";
-      userEmail = "jane.doe@example.org";
+      userName = "Daniil-Aleshechkin";
+      userEmail = "aleshechkin.daniil@gmail.com";
     };
 
     neovim = {

@@ -21,7 +21,7 @@
     ...
   }: {
     nixosConfigurations = {
-      hostname = nixpkgs.lib.nixosSystem { # TODO Set hostname
+      hostname = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           ./configuration.nix
@@ -32,7 +32,7 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.jdoe = import ./home.nix; # TODO Set name
+            home-manager.users.nixos = import ./home.nix;
           }
         ];
       };
