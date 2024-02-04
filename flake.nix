@@ -21,7 +21,7 @@
     ...
   }: {
     nixosConfigurations = {
-      hostname = nixpkgs.lib.nixosSystem {
+      "DANIILA-P53" = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           ./configuration.nix
