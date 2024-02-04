@@ -4,6 +4,14 @@
   pkgs,
   ...
 }: {
+  imports = [
+    # https://github.com/nix-community/nixos-vscode-server
+    "${fetchTarball {
+      url = "https://github.com/msteen/nixos-vscode-server/tarball/master";
+      sha256 = "0sz8njfxn5bw89n6xhlzsbxkafb6qmnszj4qxy2w0hw2mgmjp829";
+    }}/modules/vscode-server/home.nix"
+  ];
+
   home = {
     username = "daniil";
     homeDirectory = "/home/daniil";
@@ -50,16 +58,28 @@
     };
 
     vscode = {
+      # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.vscode.package
       enable = true;
       package = pkgs.vscodium;
       extensions = with pkgs.vscode-extensions; [
+        # install extensions here
+        # search: https://search.nixos.org/packages?type=packages&query=vscode-extensions
         # Nix stuff
         mkhl.direnv
+        jnoortheen.nix-ide
 
         # js stuff
         dbaeumer.vscode-eslint
         esbenp.prettier-vscode
       ];
+    };
+  };
+
+  services = {
+    vscode-server = {
+      enable = true;
+      # enableFHS = true; # this allows to install extensions from inside vscode rather than above
+      # nodejsPackage = pkgs.nodejs-16_x; # if you need to override node
     };
   };
 }
