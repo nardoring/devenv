@@ -34,6 +34,7 @@
     wget
     cmake
     jq
+    tmux
   ];
 
   programs = {
@@ -75,6 +76,11 @@
         dbaeumer.vscode-eslint
         esbenp.prettier-vscode
       ];
+    };
+
+    tmux = {
+      enable = true;
+      clock24 = true;
     };
   };
 
