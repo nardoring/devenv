@@ -43,30 +43,31 @@ We should now be in the nixos container, now we can start a shell with =vim= and
 nix-shell -p neovim git
 #+end_src
 
-Clone this repo to =~/= or where ever you'd like to manage your config from. We can just symlink to =/etc/nixos/=.
+**Notice that the shell prompt changes** to let you know that you are in a nix shell. We can exit this when we are done editing with =exit= to return to our normal shell prompt.
 
 Backup =/etc/nixos= first
 #+begin_src shell
-sudo mv /etc/nixos /etc/nixos~
+sudo cp /etc/nixos /etc/nixos~
 #+end_src
+
+Clone this repo to =~/= or where ever you'd like to manage your config from. We can just symlink to =/etc/nixos/=.
 
 #+begin_src shell
-cd
+cd ~
 git clone git@github.com:nardoring/devenv.git
-sudo ln -s devenv/* /etc/nixos
+sudo ln -s ./devenv/* /etc/nixos
 #+end_src
 
-You'll likely want to make a new branch for yourself.
 
-*** Config
+*** Configuration
 
 Set your =defaultUser= and =networking.hostName=
 #+begin_src shell
-nvim /devenv/configuration.nix
+nvim /devenv/users/<you>/configuration.nix
 #+end_src
 
 #+begin_src nix
-# /etc/nixos/configuration.nix
+# /etc/nixos/users/<you>/configuration.nix
 {
   lib, pkgs, config, modulesPath, ...
 }: {
@@ -75,30 +76,34 @@ nvim /devenv/configuration.nix
   ];
 
   wsl = {
-    defaultUser = "jdoe"; # TODO Set name
-    ...
+    defaultUser = "<you>"; # TODO Set name
+  };
+
+  users.users.<you> = {
+    group = "users";
+    isNormalUser = true;
+    extraGroups = ["docker"];
   };
 
   # set this to your Windows 11/10 “Device name.” You can find
   # this in the Windows Settings app under System > About.
-  networking.hostName = "name"; # TODO Set hostname
+  networking.hostName = "hostname"; # TODO Set hostname
   ...
 }
 #+end_src
 
-Set your =username=, =~/=, and git info
+Set your =username= and git info
 #+begin_src shell
-nvim /devenv/home.nix
+nvim /devenv/users/<you>/home.nix
 #+end_src
 
 #+begin_src nix
-# /etc/nixos/home.nix
+# /etc/nixos/users/<>/default.nix
 {
   config, pkgs, ...
 }: {
   home = {
     username = "jdoe"; # TODO Set name
-    homeDirectory = "/home/jdoe"; # TODO Set name
   };
   ...
   programs = {
@@ -119,25 +124,40 @@ nvim /devenv/flake.nix
 #+begin_src nix
 # /etc/nixos/flake.nix
 {
-  inputs = {...};
+  inputs = {
+    ...
   };
 
-  outputs = inputs @ {nixpkgs, nixos-wsl, nixpkgs-python, home-manager, ...}: {
-    nixosConfigurations = {
-      hostname = nixpkgs.lib.nixosSystem { # TODO Set hostname
-        system = "x86_64-linux";
+  outputs = inputs @ {
+    ...
+  }: let
+    system = "x86_64-linux";
+
+    makeUserHost = userName:
+      nixpkgs.lib.nixosSystem {
+        inherit system;
         modules = [
+          ./users/common.nix
+          ./users/${userName}/configuration.nix
           home-manager.nixosModules.home-manager
           {
             ...
-            home-manager.users.jdoe = import ./home.nix; # TODO Set name
+            home-manager.users.${userName} = import ./users/${userName};
           }
         ];
       };
+  in {
+    nixosConfigurations = {
+      <your-hostname> = makeUserHost "<you>";
+      <other-hostname> = makeUserHost "<not-you>";
+      ...
     };
   };
 }
 #+end_src
+
+Once we are done editing these files we can go ahead and =exit= the devshell. Notice the prompt changes back to your original shell prompt.
+
 
 *** Build
 
@@ -149,11 +169,16 @@ warning: Git tree '/etc/nixos' is dirty
 
 We can ignore this warning, it's just telling us that we have uncommited changes
 
+We now see that your hostname is shown in the flake output as a =nixosConfiguration=
+
 #+begin_src shell
 $ nix flake show
 git+file:///etc/nixos
 └───nixosConfigurations
-    └───"hostname": NixOS configuration
+    ├───your-hostname: NixOS configuration
+    ├───other-hostname: NixOS configuration
+    └───otherhost-name: NixOS configuration
+
 #+end_src
 
 Once this works then we can track our lockfile and commit our changes
@@ -161,6 +186,8 @@ Once this works then we can track our lockfile and commit our changes
 git add flake.lock
 git commit -m "init wsl config"
 #+end_src
+
+Then rebuild our newly configured system. This will be the command we run any time we make changes to =*.nix= files and want to rebuild out system.
 
 #+begin_src shell
 sudo nixos-rebuild switch
@@ -178,3 +205,15 @@ wsl -d NixOS
 It should automatically log in as the =<username>@<pick a host name>= from =configuration.nix= (your new default user) not =nixos@nixos= or =root@nixos=, if that's the case, something went wrong.
 
 Reboot.
+
+
+*** Updating
+To update any of our flake inputs, which updates any packages we have installed as well as our OS, we can run
+
+#+begin_src shell
+cd ~/devenv
+nix flake update
+sudo nixos-rebuild switch
+#+end_src
+
+This puts us in our config directory, updates =flake.lock= and rebuilds the system. Be sure to commit the newly updated =flake.lock= as this is what ensures we are all using the same versions of any installed packages, dev dependencies, etc.
