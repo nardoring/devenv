@@ -45,6 +45,8 @@
 
     git = {
       enable = true;
+      userName = "Daniil-Aleshechkin";
+      userEmail = "aleshechkin.daniil@gmail.com";
     };
 
     neovim = {
