@@ -27,7 +27,6 @@
         inherit system;
         modules = [
           ./users/${userName}/configuration.nix
-
           nixos-wsl.nixosModules.wsl
 
           home-manager.nixosModules.home-manager
@@ -40,9 +39,9 @@
       };
   in {
     nixosConfigurations = {
-      adam = makeUserHost "adam";
-      bh = makeUserHost "bh";
-      daniil = makeUserHost "daniil";
+      DESKTOP-G02L8L1 = makeUserHost "adam";
+      NB10798 = makeUserHost "bh";
+      nixos = makeUserHost "daniil";
     };
   };
 }
