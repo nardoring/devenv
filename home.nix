@@ -78,10 +78,6 @@
       ];
     };
 
-    tmux = {
-      enable = true;
-      clock24 = true;
-    };
   };
 
   services = {
