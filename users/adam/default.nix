@@ -1,12 +1,13 @@
-# /etc/nixos/home.nix
+# /etc/nixos/users/adam/default.nix
 {
+  lib,
   config,
   pkgs,
   ...
 }: {
   home = {
-    username = "jdoe"; # TODO Set name
-    homeDirectory = "/home/jdoe"; # TODO Set name
+    username = "adam";
+    # homeDirectory = "/home/adam";
     stateVersion = "23.11";
   };
 
@@ -17,9 +18,13 @@
     alejandra
     cached-nix-shell
     cachix
+    cmake
     coreutils
-    htop
+    docker
+    docker-compose
     gnumake
+    htop
+    jq
     unzip
     wget
   ];
@@ -39,13 +44,28 @@
 
     git = {
       enable = true;
-      userName = "Jane Doe";
-      userEmail = "jane.doe@example.org";
     };
 
     neovim = {
       enable = true;
       defaultEditor = true;
+    };
+
+    vscode = {
+      # https://nix-community.github.io/home-manager/options.xhtml#opt-programs.vscode.package
+      enable = true;
+      # package = pkgs.vscodium;
+      extensions = with pkgs.vscode-extensions; [
+        # install extensions here
+        # search: https://search.nixos.org/packages?type=packages&query=vscode-extensions
+        # Nix stuff
+        mkhl.direnv
+        jnoortheen.nix-ide
+
+        # js stuff
+        dbaeumer.vscode-eslint
+        esbenp.prettier-vscode
+      ];
     };
   };
 }

@@ -19,12 +19,14 @@
     nixpkgs-python,
     home-manager,
     ...
-  }: {
-    nixosConfigurations = {
-      hostname = nixpkgs.lib.nixosSystem { # TODO Set hostname
-        system = "x86_64-linux";
+  }: let
+    system = "x86_64-linux";
+
+    makeUserHost = userName:
+      nixpkgs.lib.nixosSystem {
+        inherit system;
         modules = [
-          ./configuration.nix
+          ./users/${userName}/configuration.nix
 
           nixos-wsl.nixosModules.wsl
 
@@ -32,10 +34,15 @@
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            home-manager.users.jdoe = import ./home.nix; # TODO Set name
+            home-manager.users.${userName} = import ./users/${userName};
           }
         ];
       };
+  in {
+    nixosConfigurations = {
+      adam = makeUserHost "adam";
+      bh = makeUserHost "bh";
+      daniil = makeUserHost "daniil";
     };
   };
 }
