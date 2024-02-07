@@ -26,6 +26,7 @@
       nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
+          ./users/common.nix
           ./users/${userName}/configuration.nix
           nixos-wsl.nixosModules.wsl
 
